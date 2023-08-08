@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.App-service.meta.name }}
+  namespace: {{ .Values.App-service.meta.namespace }}
+  labels:
+    app: {{ .Values.App-service.meta.label }}
+spec:
+  replicas: {{ .Values.App-service.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: {{ .Values.App-service.rollingupdate.maxunavailable }}
+      maxSurge: {{ .Values.App-service.rollingupdate.maxsurge }}
+  minReadySeconds: {{ .Values.App-service.rollingupdate.minreadyseconds }}
+  selector:
+    matchLabels:
+      app: {{ .Values.App-service.meta.label }}
+  template:
+    metadata:
+      name: {{ .Values.App-service.meta.name }}
+      labels:
+        app: {{ .Values.App-service.meta.label }}
+    spec:
+      # initContainers:
+      #   - name: init-container
+      #     image: "groundnuty/k8s-wait-for:1.3"
+      #     imagePullPolicy: {{ .Values.App-service.image.pullPolicy }}        
+      #     args:
+      #     - "job"
+      #     - "{{ .Values.App-service.meta.name }}-job"
+      containers:
+        - name: {{ .Values.App-service.meta.name }}
+          image: "{{ .Values.App-service.image.repository }}:{{ .Values.App-service.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.App-service.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.App-service.ports.containerport}}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.App-service.httpget.port }}
+            initialDelaySeconds: {{ .Values.App-service.http.initialdelayseconds }}
+            timeoutSeconds: {{ .Values.App-service.http.timeoutseconds }}
+            periodSeconds: {{ .Values.App-service.http.periodseconds }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.App-service.httpget.port }}
+            initialDelaySeconds: {{ .Values.App-service.http.initialdelayseconds }}
+            timeoutSeconds: {{ .Values.App-service.http.timeoutseconds }}
+            periodSeconds: {{ .Values.App-service.http.periodseconds }}
+          resources:
+            requests:
+              cpu: {{ .Values.App-service.requests.cpu }}
+              memory: {{ .Values.App-service.requests.memory }}
+            limits:
+              cpu: {{ .Values.App-service.limits.cpu }}
+              memory: {{ .Values.App-service.limits.memory }}

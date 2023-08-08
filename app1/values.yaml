@@ -1,0 +1,40 @@
+App-service:
+  replicaCount: 2
+  meta:
+    name: App-service
+    label: App-service-label
+    namespace: default
+  rollingupdate:
+    maxunavailable: 30%
+    maxsurge: 30%
+    minreadyseconds: 50
+  ports:
+    containerport: 80
+  httpget:
+    port: 80
+  http:
+    initialdelayseconds: 50
+    timeoutseconds: 2
+    periodseconds: 15
+  requests:
+    cpu: 512m
+    memory: 2Gi
+  limits:
+    cpu: 1024m
+    memory: 4Gi
+  # http:
+  #   initialdelayseconds: 15
+  #   timeoutseconds: 2
+  #   periodseconds: 15
+  autoscaling:
+    minReplicas: 1
+    maxReplicas: 5
+    targetaverageutilization: 70
+  image:
+    repository: carol16/imagei16
+    pullPolicy: IfNotPresent
+    tag: v2
+  service:
+    type: LoadBalancer
+    port: 80
+    targetport: 80
